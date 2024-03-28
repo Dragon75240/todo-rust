@@ -15,14 +15,14 @@ jobs:
         profile: minimal
 
     - name: Build
-      run: cargo build --verbose
+      run: cargo build
 
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test
 
     - name: Zip .exe files
       run: |
-        zip -r exe_files.zip target/*.exe
+        zip -r exe_files.zip . -i target/*.exe
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
