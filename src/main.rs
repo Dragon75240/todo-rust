@@ -23,11 +23,11 @@ mod options {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
-    println!("{:?}", args);
 
+    // Database Stuff //
     let db_path = dirs::document_dir().expect("Path").join("todos.sqlite");
     let conn = Connection::open(db_path)?;
-    
+
     conn.execute(
         "CREATE TABLE IF NOT EXISTS todos (
             id INTEGER PRIMARY KEY,
@@ -35,21 +35,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )",
         [],
     )?;
-    
+
     let todos = get_todos(&conn)?;
 
-    let mut options: HashMap<String, Box<dyn Option>> = HashMap::new();
+    let mut options:HashMap<String, Box<dyn Option>> = HashMap::new();
+    options.insert("new".to_string(), Box::new(options::new::New {conn: conn}) as Box<dyn option::Option>);
+    
+    //HashMap<String, Box<dyn Option>>
 
     if args.len() > 1 {
-        let command_name = args[1].clone();
+        let option_name = args[1].clone();
         let args = &args[2..];
-        
+
+        match options.get(&option_name) {
+            Some(option) => {
+                match option.exec(args) {
+                    Ok(_) => (),
+                    Err(e) => println!("Error: {}", e),
+                }
+            },
+            None => println!("Unknown command"),
+        }
     } else {
-        for todo in todos {
-            println!("ID: {}, Name: {}", todo.id, todo.name);
+        for todo in todos { 
+            println!("{}. {}", todo.id, todo.name);
         }
     }
-
     Ok(())
 }
 
