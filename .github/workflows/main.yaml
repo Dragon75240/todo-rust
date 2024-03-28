@@ -21,7 +21,7 @@ jobs:
 
     - name: Zip .exe files
       run: |
-        zip -r exe_files.zip target/*.exe
+        zip -r exe_files.zip . -i target/*.exe
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
