@@ -1,5 +1,9 @@
 {
     "yaml.schemas": {
         "https://json.schemastore.org/github-action.json": "file:///c%3A/Users/Dragon%20S/Desktop/Developing/Rust/todo/.github/CI.yaml"
-    }
+    },
+    "rust-analyzer.linkedProjects": [
+        "./Cargo.toml",
+        "./Cargo.toml"
+    ]
 }
