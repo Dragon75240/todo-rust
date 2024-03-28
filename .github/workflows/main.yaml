@@ -20,12 +20,12 @@ jobs:
     - name: Run tests
       run: cargo test
 
-    - name: Zip linux files
-      run: |
-        zip executables.zip . target/debug/todo* -9
+    #- name: Zip linux files
+    #  run: |
+    #    zip executables.zip . target/debug/todo* -9
 
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: executables
-        path: executables.zip
+        path: target/debug/todo
