@@ -7,6 +7,7 @@
 struct TodoItem {
     id: i32,
     name: String,
+    status: bool,
 }
 
 pub mod option;
@@ -14,11 +15,14 @@ pub mod option;
 use dirs;
 use rusqlite::{Connection, Result};
 use std::{collections::HashMap, env};
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use crate::option::Option;
 
 mod options {
     pub mod new;
+    pub mod remove;
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -26,20 +30,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Database Stuff //
     let db_path = dirs::document_dir().expect("Path").join("todos.sqlite");
-    let conn = Connection::open(db_path)?;
+    let conn = Rc::new(RefCell::new(Connection::open(db_path)?));
 
-    conn.execute(
+    conn.borrow_mut().execute(
         "CREATE TABLE IF NOT EXISTS todos (
             id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            status INTEGER NOT NULL
         )",
         [],
     )?;
 
-    let todos = get_todos(&conn)?;
+    let todos = get_todos(&conn.borrow_mut())?;
 
-    let mut options:HashMap<String, Box<dyn Option>> = HashMap::new();
-    options.insert("new".to_string(), Box::new(options::new::New {conn: conn}) as Box<dyn option::Option>);
+    let mut options: HashMap<String, Box<dyn Option>> = HashMap::new();
+    options.insert("new".to_string(), Box::new(options::new::New {conn: Rc::clone(&conn)}) as Box<dyn option::Option>);
+
+    options.insert("remove".to_string(), Box::new(options::remove::Remove {conn: Rc::clone(&conn)}) as Box<dyn option::Option>);
     
     //HashMap<String, Box<dyn Option>>
 
@@ -70,6 +77,7 @@ fn get_todos(conn: &Connection) -> Result<Vec<TodoItem>> {
         Ok(TodoItem {
             id: row.get(0)?,
             name: row.get(1)?,
+            status: row.get(2)?
         })
     })?;
 

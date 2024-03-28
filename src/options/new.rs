@@ -1,15 +1,21 @@
+use std::{cell::RefCell, rc::Rc};
+
 use rusqlite::{Connection, Result};
-use todo::todo_util;
 
 use crate::option::Option;
 
-pub struct New { pub conn: Connection }
-/*
-impl New {
-    pub fn new(connection: Connection) -> Self {
-        New { conn: connection }
-    }
-}*/
+fn create_todo(conn: &Connection, name: &str) -> Result<i32, Box<dyn std::error::Error>> {
+    let mut stmt = conn.prepare("INSERT INTO todos (name) VALUES (?1)")?;
+    let _rows_affected = stmt.execute(&[name])?;
+
+    let last_insert_row_id = conn.last_insert_rowid();
+
+    Ok(last_insert_row_id as i32)
+}
+
+pub struct New {
+    pub conn: Rc<RefCell<Connection>>,
+}
 
 impl Option for New {
     fn exec(&self, args: &[String]) -> Result<(), Box<dyn std::error::Error>> {
@@ -17,8 +23,9 @@ impl Option for New {
             return Err("Missing name of todo".to_string().into());
         }
 
-        let todo_name = &args[0];
-        let _new_todo_id = todo_util::create_todo(&self.conn, todo_name);
+        let todo_name: String = args.join(" ");
+
+        let _ = create_todo(&self.conn.borrow(), &todo_name);
         Ok(())
     }
 }

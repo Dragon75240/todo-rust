@@ -12,17 +12,3 @@ pub fn open_json(file_name: &str) -> Result<String, Error> {
 
     Ok(contents)
 }*/
-
-
-pub mod todo_util {
-    use rusqlite::Connection;
-
-    pub fn create_todo(conn: &Connection, name: &str) -> Result<i32, Box<dyn std::error::Error>> {
-        let mut stmt = conn.prepare("INSERT INTO todos (name) VALUES (?1)")?;
-        let _rows_affected = stmt.execute(&[name])?;
-
-        let last_insert_row_id = conn.last_insert_rowid();
-
-        Ok(last_insert_row_id as i32)
-    }
-}
